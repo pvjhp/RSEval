@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Movie } from '../types';
 import { SelectRating } from './SelectRating';
 import { TrailerModal } from './TrailerModal';
-import { Play, Calendar, User, Users, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { Play, Calendar, User, Users, ChevronDown, ChevronUp, Info, StickyNote } from 'lucide-react';
 
 interface MovieCardProps {
   movie: Movie;
@@ -106,7 +106,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
           
           <div className="mb-6 flex-grow">
             <div className="flex items-center gap-1 mb-2">
-              //<Info size={14} className="text-gray-400" />
+              <StickyNote size={14} className="text-gray-400" />
               <span className="text-gray-400 font-medium text-sm">Description</span>
             </div>
             <p className="text-gray-300 text-sm leading-relaxed">
