@@ -106,7 +106,6 @@ export type Database = {
           year: number;
           director: string;
           actors: string;
-          is_recommended: boolean;
           created_at: string;
         };
         Insert: {
@@ -119,7 +118,6 @@ export type Database = {
           year: number;
           director: string;
           actors: string;
-          is_recommended?: boolean;
           created_at?: string;
         };
         Update: {
@@ -132,7 +130,6 @@ export type Database = {
           year?: number;
           director?: string;
           actors?: string;
-          is_recommended?: boolean;
           created_at?: string;
         };
       };

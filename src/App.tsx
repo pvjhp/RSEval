@@ -169,7 +169,6 @@ function App() {
         const { data, error } = await supabase
           .from('movies')
           .select('*')
-          .eq('is_recommended', false)
           .order('id')
           .then(result => {
             if (result.data) {
@@ -189,7 +188,7 @@ function App() {
         // Update poster URLs to use Supabase storage
         const moviesWithStoragePoster = data.map(movie => ({
           ...movie,
-          poster: `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/posters/${movie.poster}`
+          poster: `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/posters/${movie.id}.jpg`
         }));
         
         setCurrentMovies(moviesWithStoragePoster);
@@ -213,7 +212,7 @@ function App() {
             // Update poster URLs to use Supabase storage
             const moviesWithStoragePoster = (data || []).map(movie => ({
               ...movie,
-              poster: `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/posters/${movie.poster}`
+              poster: `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/posters/${movie.id}.jpg`
             }));
             
             setCurrentMovies(moviesWithStoragePoster);
@@ -230,7 +229,7 @@ function App() {
             // Update poster URLs to use Supabase storage
             const moviesWithStoragePoster = (data || []).map(movie => ({
               ...movie,
-              poster: `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/posters/${movie.poster}`
+              poster: `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/posters/${movie.id}.jpg`
             }));
             
             setCurrentMovies(moviesWithStoragePoster);
