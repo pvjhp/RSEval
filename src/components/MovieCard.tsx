@@ -105,6 +105,10 @@ export const MovieCard: React.FC<MovieCardProps> = ({
           </div>
           
           <div className="mb-6 flex-grow">
+            <div className="flex items-center gap-1 mb-2">
+              <Info size={16} className="text-amber-400" />
+              <span className="text-amber-400 font-medium text-sm">Description</span>
+            </div>
             <p className="text-gray-300 text-sm leading-relaxed">
               {isDescriptionExpanded ? movie.description : truncatedDescription}
             </p>
