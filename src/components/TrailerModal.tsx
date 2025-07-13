@@ -18,6 +18,24 @@ export const TrailerModal: React.FC<TrailerModalProps> = ({
 
   // Convert various URL formats to embed format
   const getEmbedUrl = (url: string) => {
+    // Vimeo embed HTML (check for iframe with vimeo player)
+    if (url.includes('player.vimeo.com/video/')) {
+      // Extract video ID from Vimeo player URL
+      const match = url.match(/player\.vimeo\.com\/video\/(\d+)/);
+      if (match) {
+        const videoId = match[1];
+        return `https://player.vimeo.com/video/${videoId}?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479`;
+      }
+    }
+    
+    // Vimeo direct links
+    if (url.includes('vimeo.com/') && !url.includes('player.vimeo.com')) {
+      const videoId = url.split('vimeo.com/')[1]?.split('?')[0];
+      if (videoId) {
+        return `https://player.vimeo.com/video/${videoId}?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479`;
+      }
+    }
+    
     // Google Drive links
     if (url.includes('drive.google.com/file/d/')) {
       const fileId = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)?.[1];
@@ -52,6 +70,9 @@ export const TrailerModal: React.FC<TrailerModalProps> = ({
     return url;
   };
 
+  const isVimeoUrl = (url: string) => {
+    return url.includes('vimeo.com') || url.includes('player.vimeo.com');
+  };
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
       <div className="bg-gray-900 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
@@ -64,17 +85,23 @@ export const TrailerModal: React.FC<TrailerModalProps> = ({
             <X size={24} />
           </button>
         </div>
-        <div className="aspect-video">
+        <div className="aspect-video relative">
           <iframe
             src={getEmbedUrl(trailerUrl)}
             title={`${movieTitle} Trailer`}
-            className="w-full h-full"
+            className="absolute top-0 left-0 w-full h-full"
             frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allow={isVimeoUrl(trailerUrl) 
+              ? "autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+              : "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            }
             allowFullScreen
           />
         </div>
       </div>
+      {isVimeoUrl(trailerUrl) && (
+        <script src="https://player.vimeo.com/api/player.js" async />
+      )}
     </div>
   );
 };

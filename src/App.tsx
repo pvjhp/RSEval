@@ -186,7 +186,13 @@ function App() {
           throw new Error('No initial movies found in database');
         }
 
-        setCurrentMovies(data);
+        // Update poster URLs to use Supabase storage
+        const moviesWithStoragePoster = data.map(movie => ({
+          ...movie,
+          poster: `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/posters/${movie.poster}`
+        }));
+        
+        setCurrentMovies(moviesWithStoragePoster);
       } else {
         // Use recommender algorithm to get personalized recommendations
         if (sessionId) {
@@ -204,7 +210,13 @@ function App() {
             // Log the recommendation for analysis
             await recommenderService.logRecommendation(sessionId, recommendedIds);
             
-            setCurrentMovies(data || []);
+            // Update poster URLs to use Supabase storage
+            const moviesWithStoragePoster = (data || []).map(movie => ({
+              ...movie,
+              poster: `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/posters/${movie.poster}`
+            }));
+            
+            setCurrentMovies(moviesWithStoragePoster);
           } else {
             // Fallback to first 10 Phase 2 movies
             const { data, error } = await supabase
@@ -214,7 +226,14 @@ function App() {
               .limit(10);
 
             if (error) throw error;
-            setCurrentMovies(data || []);
+            
+            // Update poster URLs to use Supabase storage
+            const moviesWithStoragePoster = (data || []).map(movie => ({
+              ...movie,
+              poster: `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/posters/${movie.poster}`
+            }));
+            
+            setCurrentMovies(moviesWithStoragePoster);
           }
         }
       }
