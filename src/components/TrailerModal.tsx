@@ -24,7 +24,7 @@ export const TrailerModal: React.FC<TrailerModalProps> = ({
       const match = url.match(/player\.vimeo\.com\/video\/(\d+)/);
       if (match) {
         const videoId = match[1];
-        return `https://player.vimeo.com/video/${videoId}?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479`;
+        return `https://player.vimeo.com/video/${videoId}?title=0&amp;byline=0&amp;portrait=0&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479`;
       }
     }
     
@@ -32,7 +32,7 @@ export const TrailerModal: React.FC<TrailerModalProps> = ({
     if (url.includes('vimeo.com/') && !url.includes('player.vimeo.com')) {
       const videoId = url.split('vimeo.com/')[1]?.split('?')[0];
       if (videoId) {
-        return `https://player.vimeo.com/video/${videoId}?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479`;
+        return `https://player.vimeo.com/video/${videoId}?title=0&amp;byline=0&amp;portrait=0&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479`;
       }
     }
     
