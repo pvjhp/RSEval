@@ -62,12 +62,12 @@ export const MovieCard: React.FC<MovieCardProps> = ({
 
   return (
     <>
-      <div className="bg-gray-900 rounded-xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105 border border-gray-800">
+      <div className="bg-gray-900 rounded-xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105 border border-gray-800 flex flex-col h-full">
         <div className="relative group">
           <img
             src={movie.poster}
             alt={movie.title}
-            className="w-full h-64 object-cover"
+            className="w-full h-80 object-contain bg-gray-800"
           />
           <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center">
             <button
@@ -79,7 +79,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
           </div>
         </div>
         
-        <div className="p-6">
+        <div className="p-6 flex flex-col flex-grow">
           <div className="flex items-center gap-4 mb-3 text-sm text-gray-400">
             <div className="flex items-center gap-1">
               <Calendar size={16} />
@@ -96,7 +96,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
           
           <h3 className="text-xl font-bold text-white mb-3">{movie.title}</h3>
           
-          <div className="mb-4">
+          <div className="mb-4 flex-shrink-0">
             <div className="flex items-center gap-1 mb-2">
               <Users size={16} className="text-amber-400" />
               <span className="text-amber-400 font-medium text-sm">Cast</span>
@@ -104,7 +104,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
             <p className="text-gray-300 text-sm">{movie.actors}</p>
           </div>
           
-          <div className="mb-6">
+          <div className="mb-6 flex-grow">
             <p className="text-gray-300 text-sm leading-relaxed">
               {isDescriptionExpanded ? movie.description : truncatedDescription}
             </p>
@@ -129,7 +129,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
             )}
           </div>
           
-          <div className="space-y-4">
+          <div className="space-y-4 flex-shrink-0">
             <SelectRating
               rating={rating}
               onRatingChange={onRatingChange}
