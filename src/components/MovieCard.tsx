@@ -145,7 +145,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                 <div className="space-y-4">
                   <div className="relative">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="text-amber-400 font-medium text-sm">Diversity Rating</span>
+                      <span className="text-amber-400 font-medium text-sm">How diverse is this movie? (0 = not diverse, 10 = very diverse)</span>
                       <div className="relative group">
                         <Info size={16} className="text-gray-400 hover:text-amber-400 cursor-help" />
                         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none w-64 z-10">
@@ -162,7 +162,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                   
                   <div className="relative">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="text-amber-400 font-medium text-sm">Novelty Rating</span>
+                      <span className="text-amber-400 font-medium text-sm">How novel is this movie? (0 = not novel, 10 = very novel)</span>
                       <div className="relative group">
                         <Info size={16} className="text-gray-400 hover:text-amber-400 cursor-help" />
                         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none w-64 z-10">
@@ -179,7 +179,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                   
                   <div className="relative">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="text-amber-400 font-medium text-sm">Serendipity Rating</span>
+                      <span className="text-amber-400 font-medium text-sm">How serendipitous is this movie? (0 = not serendipitous, 10 = very serendipitous)</span>
                       <div className="relative group">
                         <Info size={16} className="text-gray-400 hover:text-amber-400 cursor-help" />
                         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none w-64 z-10">
