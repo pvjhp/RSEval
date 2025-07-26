@@ -415,10 +415,13 @@ function App() {
     const incomplete: number[] = [];
     currentMovies.forEach(movie => {
       const rating = getRating(movie.id);
-      if (rating.rating < 0 || 
-          rating.diversity === undefined || rating.diversity < 0 || 
-          rating.novelty === undefined || rating.novelty < 0 || 
-          rating.serendipity === undefined || rating.serendipity < 0) {
+      // Check if any required rating is missing
+      const hasMainRating = rating.rating >= 0;
+      const hasDiversityRating = rating.diversity !== undefined && rating.diversity >= 0;
+      const hasNoveltyRating = rating.novelty !== undefined && rating.novelty >= 0;
+      const hasSerendipityRating = rating.serendipity !== undefined && rating.serendipity >= 0;
+      
+      if (!hasMainRating || !hasDiversityRating || !hasNoveltyRating || !hasSerendipityRating) {
         incomplete.push(movie.id);
       }
     });
@@ -433,10 +436,12 @@ function App() {
   const allRecommendedMoviesRated = () => {
     return currentMovies.every(movie => {
       const rating = getRating(movie.id);
-      return rating.rating >= 0 && 
-             rating.diversity !== undefined && rating.diversity >= 0 && 
-             rating.novelty !== undefined && rating.novelty >= 0 && 
-             rating.serendipity !== undefined && rating.serendipity >= 0;
+      const hasMainRating = rating.rating >= 0;
+      const hasDiversityRating = rating.diversity !== undefined && rating.diversity >= 0;
+      const hasNoveltyRating = rating.novelty !== undefined && rating.novelty >= 0;
+      const hasSerendipityRating = rating.serendipity !== undefined && rating.serendipity >= 0;
+      
+      return hasMainRating && hasDiversityRating && hasNoveltyRating && hasSerendipityRating;
     });
   };
 
