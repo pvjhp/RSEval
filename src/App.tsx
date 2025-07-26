@@ -441,12 +441,11 @@ function App() {
   };
 
   const handleStartFromIntro = () => {
-    recordPhaseTransition('intro', 'initial');
     setPhase('initial');
   };
 
   const handleGetRecommendations = async () => {
-    recordPhaseTransition('choice', 'recommendation');
+    await recordPhaseTransition('choice', 'recommendation');
     setPhase('recommendation');
     await updateSessionPhase('recommendation');
     await fetchMovies('recommended');
@@ -466,11 +465,12 @@ function App() {
       }
     }
     
-    recordPhaseTransition(phase, 'questionnaire');
     setPhase('questionnaire');
   };
 
   const handleQuestionnaireComplete = async (questionnaireData: QuestionnaireData) => {
+    await recordPhaseTransition('questionnaire', 'complete');
+    
     // Save questionnaire data to database
     if (sessionId && !sessionId.startsWith('local_')) {
       try {
@@ -494,7 +494,6 @@ function App() {
       }
     }
 
-    recordPhaseTransition('questionnaire', 'complete');
     setPhase('complete');
     await endSession();
   };
