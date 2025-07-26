@@ -49,21 +49,11 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ onComp
     'Action',
     'Adventure',
     'Animation',
-    'Biography',
     'Comedy',
-    'Crime',
-    'Documentary',
     'Drama',
-    'Family',
-    'Fantasy',
     'Horror',
-    'Musical',
-    'Mystery',
     'Romance',
-    'Sci-Fi',
-    'Thriller',
-    'War',
-    'Western'
+    'Science Fiction'
   ];
 
   const ageRangeOptions = [
