@@ -40,13 +40,21 @@ export const TrailerModal: React.FC<TrailerModalProps> = ({
     if (url.includes('drive.google.com/file/d/')) {
       const fileId = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)?.[1];
       if (fileId) {
-        return `https://drive.google.com/file/d/${fileId}/preview`;
+        return `https://drive.google.com/file/d/${fileId}/preview?usp=sharing`;
       }
     }
     
     // Google Drive direct preview links
     if (url.includes('drive.google.com') && url.includes('/preview')) {
-      return url;
+      return url.includes('usp=sharing') ? url : `${url}${url.includes('?') ? '&' : '?'}usp=sharing`;
+    }
+    
+    // Google Drive view links
+    if (url.includes('drive.google.com/open?id=')) {
+      const fileId = url.match(/id=([a-zA-Z0-9_-]+)/)?.[1];
+      if (fileId) {
+        return `https://drive.google.com/file/d/${fileId}/preview?usp=sharing`;
+      }
     }
     
     // YouTube embed links (already in embed format)
@@ -73,6 +81,11 @@ export const TrailerModal: React.FC<TrailerModalProps> = ({
   const isVimeoUrl = (url: string) => {
     return url.includes('vimeo.com') || url.includes('player.vimeo.com');
   };
+  
+  const isGoogleDriveUrl = (url: string) => {
+    return url.includes('drive.google.com');
+  };
+  
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
       <div className="bg-gray-900 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
@@ -91,11 +104,15 @@ export const TrailerModal: React.FC<TrailerModalProps> = ({
             title={`${movieTitle} Trailer`}
             className="absolute top-0 left-0 w-full h-full"
             frameBorder="0"
-            allow={isVimeoUrl(trailerUrl) 
-              ? "autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-              : "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allow={
+              isVimeoUrl(trailerUrl) 
+                ? "autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                : isGoogleDriveUrl(trailerUrl)
+                ? "autoplay; fullscreen; picture-in-picture"
+                : "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             }
             allowFullScreen
+            sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
           />
         </div>
       </div>

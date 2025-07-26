@@ -25,6 +25,7 @@ function App() {
   const [incompleteRatings, setIncompleteRatings] = useState<number[]>([]);
   const [trailerStartTimes, setTrailerStartTimes] = useState<Map<number, string>>(new Map());
   const [isInitializing, setIsInitializing] = useState<boolean>(false);
+  const [pendingRatings, setPendingRatings] = useState<Map<string, any>>(new Map());
 
   // Initialize session and load initial movies when starting from intro
   useEffect(() => {
@@ -39,6 +40,20 @@ function App() {
       recordScreenSize();
     }
   }, [phase, sessionId]);
+  
+  // Process pending ratings with debouncing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (pendingRatings.size > 0) {
+        pendingRatings.forEach(async (rating, key) => {
+          await saveRatingToDatabase(rating);
+        });
+        setPendingRatings(new Map());
+      }
+    }, 500); // 500ms debounce
+    
+    return () => clearTimeout(timer);
+  }, [pendingRatings, sessionId]);
 
   const initializeApp = async () => {
     setIsInitializing(true);
@@ -78,6 +93,7 @@ function App() {
     if (!sessionId || sessionId.startsWith('local_')) return;
 
     try {
+      console.log('Recording phase transition:', { fromPhase, toPhase, sessionId });
       await supabase
         .from('phase_transitions')
         .insert({
@@ -312,6 +328,14 @@ function App() {
       }
     } catch (error) {
       console.error('Error saving rating to database:', error);
+      // Retry once after a short delay
+      setTimeout(async () => {
+        try {
+          await saveRatingToDatabase(rating);
+        } catch (retryError) {
+          console.error('Retry failed for rating save:', retryError);
+        }
+      }, 1000);
     }
   };
 
@@ -358,10 +382,11 @@ function App() {
         newRatings = [...prev, { movieId, rating }];
       }
       
-      // Save to database immediately
+      // Add to pending ratings for debounced save
       const ratingToSave = newRatings.find(r => r.movieId === movieId);
       if (ratingToSave) {
-        saveRatingToDatabase(ratingToSave);
+        const key = `${movieId}_main`;
+        setPendingRatings(prev => new Map(prev).set(key, ratingToSave));
       }
       
       return newRatings;
@@ -381,10 +406,11 @@ function App() {
         newRatings = [...prev, { movieId, rating: -1, [type]: value }];
       }
       
-      // Save to database immediately
+      // Add to pending ratings for debounced save
       const ratingToSave = newRatings.find(r => r.movieId === movieId);
       if (ratingToSave) {
-        saveRatingToDatabase(ratingToSave);
+        const key = `${movieId}_${type}`;
+        setPendingRatings(prev => new Map(prev).set(key, ratingToSave));
       }
       
       return newRatings;
@@ -470,6 +496,8 @@ function App() {
       }
     }
     
+    // Record phase transition to questionnaire
+    recordPhaseTransition(phase, 'questionnaire');
     setPhase('questionnaire');
   };
 
