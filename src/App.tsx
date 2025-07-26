@@ -11,6 +11,46 @@ import { recommenderService } from './services/recommenderService';
 import { supabase } from './lib/supabase';
 import { Film, Loader2, AlertCircle } from 'lucide-react';
 
+// Session persistence utilities
+const SESSION_STORAGE_KEY = 'cinerate_session';
+
+interface SessionState {
+  sessionId: string;
+  phase: AppPhase;
+  ratings: Rating[];
+  sessionStartTime: number;
+  minimumRatingsRequired: number;
+  currentMoviesPhase: 'initial' | 'recommended' | null;
+}
+
+const saveSessionToStorage = (sessionState: SessionState) => {
+  try {
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionState));
+  } catch (error) {
+    console.error('Error saving session to localStorage:', error);
+  }
+};
+
+const loadSessionFromStorage = (): SessionState | null => {
+  try {
+    const stored = localStorage.getItem(SESSION_STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (error) {
+    console.error('Error loading session from localStorage:', error);
+  }
+  return null;
+};
+
+const clearSessionFromStorage = () => {
+  try {
+    localStorage.removeItem(SESSION_STORAGE_KEY);
+  } catch (error) {
+    console.error('Error clearing session from localStorage:', error);
+  }
+};
+
 function App() {
   const [phase, setPhase] = useState<AppPhase>('intro');
   const [ratings, setRatings] = useState<Rating[]>([]);
@@ -26,13 +66,56 @@ function App() {
   const [trailerStartTimes, setTrailerStartTimes] = useState<Map<number, string>>(new Map());
   const [isInitializing, setIsInitializing] = useState<boolean>(false);
   const [pendingRatings, setPendingRatings] = useState<Map<string, any>>(new Map());
+  const [currentMoviesPhase, setCurrentMoviesPhase] = useState<'initial' | 'recommended' | null>(null);
+  const [isRestoringSession, setIsRestoringSession] = useState<boolean>(true);
+
+  // Load session from localStorage on app start
+  useEffect(() => {
+    const restoreSession = async () => {
+      const savedSession = loadSessionFromStorage();
+      if (savedSession && savedSession.sessionId && savedSession.phase !== 'intro') {
+        console.log('Restoring session from localStorage:', savedSession);
+        
+        // Restore session state
+        setSessionId(savedSession.sessionId);
+        setPhase(savedSession.phase);
+        setRatings(savedSession.ratings);
+        setSessionStartTime(savedSession.sessionStartTime);
+        setMinimumRatingsRequired(savedSession.minimumRatingsRequired);
+        setCurrentMoviesPhase(savedSession.currentMoviesPhase);
+        
+        // Load appropriate movies based on the current phase
+        if (savedSession.currentMoviesPhase) {
+          await fetchMovies(savedSession.currentMoviesPhase);
+        }
+      }
+      setIsRestoringSession(false);
+    };
+    
+    restoreSession();
+  }, []);
+
+  // Save session state to localStorage whenever key state changes
+  useEffect(() => {
+    if (!isRestoringSession && sessionId && phase !== 'intro') {
+      const sessionState: SessionState = {
+        sessionId,
+        phase,
+        ratings,
+        sessionStartTime,
+        minimumRatingsRequired,
+        currentMoviesPhase
+      };
+      saveSessionToStorage(sessionState);
+    }
+  }, [sessionId, phase, ratings, sessionStartTime, minimumRatingsRequired, currentMoviesPhase, isRestoringSession]);
 
   // Initialize session and load initial movies when starting from intro
   useEffect(() => {
-    if (phase === 'initial' && !sessionId) {
+    if (phase === 'initial' && !sessionId && !isRestoringSession) {
       initializeApp();
     }
-  }, [phase]);
+  }, [phase, isRestoringSession]);
 
   // Record screen size when starting Phase 1
   useEffect(() => {
@@ -208,6 +291,7 @@ function App() {
         }));
         
         setCurrentMovies(moviesWithStoragePoster);
+        setCurrentMoviesPhase('initial');
       } else {
         // Use recommender algorithm to get personalized recommendations
         if (sessionId) {
@@ -250,6 +334,7 @@ function App() {
             
             setCurrentMovies(moviesWithStoragePoster);
           }
+          setCurrentMoviesPhase('recommended');
         }
       }
     } catch (error) {
@@ -529,6 +614,8 @@ function App() {
 
     setPhase('complete');
     await endSession();
+    // Clear session from localStorage when study is complete
+    clearSessionFromStorage();
   };
 
   const getAverageRating = () => {
@@ -553,6 +640,18 @@ function App() {
     setShowPhase2CompletionModal(false);
     handleFinishAttempt();
   };
+
+  // Show loading screen while restoring session
+  if (isRestoringSession) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="animate-spin text-amber-500 mx-auto mb-4" size={48} />
+          <p className="text-gray-400 text-lg">Restoring your session...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (phase === 'intro') {
     return <IntroScreen onStart={handleStartFromIntro} />;
