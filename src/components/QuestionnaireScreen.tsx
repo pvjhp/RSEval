@@ -55,7 +55,6 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ onComp
   ];
 
   const ageRangeOptions = [
-    'Under 18',
     '18-24',
     '25-34',
     '35-44',
@@ -158,7 +157,7 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ onComp
             {/* Movie Watching Frequency */}
             <div className="mb-6">
               <label className="block text-amber-400 font-medium mb-3">
-                How often do you watch movies? *
+                How many movies do you watch per month? *
               </label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {movieFrequencyOptions.map(option => (
@@ -197,20 +196,19 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ onComp
               </div>
             </div>
 
-            {/* Primary Streaming Service */}
+            {/* RS Experience */}
             <div className="mb-6">
               <label className="block text-amber-400 font-medium mb-3">
-                What is your primary streaming service? *
+                Have you used any recommnedation systems before? *
               </label>
               <select
                 value={formData.primaryStreamingService}
                 onChange={(e) => setFormData(prev => ({ ...prev, primaryStreamingService: e.target.value }))}
                 className="w-full bg-gray-800 border border-gray-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500"
               >
-                <option value="">Select your primary service</option>
-                {streamingServiceOptions.map(service => (
-                  <option key={service} value={service}>{service}</option>
-                ))}
+                <option value="">Select an option</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
               </select>
             </div>
 
@@ -235,7 +233,7 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ onComp
             {/* Movie Genre Preferences */}
             <div className="mb-6">
               <label className="block text-amber-400 font-medium mb-3">
-                What are your favorite movie genres? (Select all that apply) *
+                What is your most favorite movie genre? *
               </label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {genreOptions.map(genre => (
