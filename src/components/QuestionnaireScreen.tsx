@@ -78,17 +78,11 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ onComp
   };
 
   const handleGenreChange = (genre: string, checked: boolean) => {
-    if (checked) {
-      setFormData(prev => ({
-        ...prev,
-        movieGenrePreferences: [...prev.movieGenrePreferences, genre]
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        movieGenrePreferences: prev.movieGenrePreferences.filter(g => g !== genre)
-      }));
-    }
+    // For single selection, replace the array with the selected genre
+    setFormData(prev => ({
+      ...prev,
+      movieGenrePreferences: checked ? [genre] : []
+    }));
   };
 
   const validateForm = () => {
@@ -201,15 +195,30 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ onComp
               <label className="block text-amber-400 font-medium mb-3">
                 Have you used any recommendation systems before? *
               </label>
-              <select
-                value={formData.primaryStreamingService}
-                onChange={(e) => setFormData(prev => ({ ...prev, primaryStreamingService: e.target.value }))}
-                className="w-full bg-gray-800 border border-gray-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500"
-              >
-                <option value="">Select an option</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
+              <div className="flex gap-6">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="recommendationExperience"
+                    value="Yes"
+                    checked={formData.primaryStreamingService === 'Yes'}
+                    onChange={(e) => setFormData(prev => ({ ...prev, primaryStreamingService: e.target.value }))}
+                    className="mr-3 text-amber-500 focus:ring-amber-500"
+                  />
+                  <span className="text-gray-300">Yes</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="recommendationExperience"
+                    value="No"
+                    checked={formData.primaryStreamingService === 'No'}
+                    onChange={(e) => setFormData(prev => ({ ...prev, primaryStreamingService: e.target.value }))}
+                    className="mr-3 text-amber-500 focus:ring-amber-500"
+                  />
+                  <span className="text-gray-300">No</span>
+                </label>
+              </div>
             </div>
 
             {/* Attention Check */}
@@ -233,13 +242,15 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ onComp
             {/* Movie Genre Preferences */}
             <div className="mb-6">
               <label className="block text-amber-400 font-medium mb-3">
-                What is your most favorite movie genre? *
+                What is your most favorite movie genre? (Select one) *
               </label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {genreOptions.map(genre => (
                   <label key={genre} className="flex items-center">
                     <input
-                      type="checkbox"
+                      type="radio"
+                      name="movieGenre"
+                      value={genre}
                       checked={formData.movieGenrePreferences.includes(genre)}
                       onChange={(e) => handleGenreChange(genre, e.target.checked)}
                       className="mr-3 text-amber-500 focus:ring-amber-500"
@@ -277,18 +288,16 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ onComp
 
             {/* Age Range */}
             <div className="mb-6">
-              <label className="block text-amber-400 font-medium mb-3">Age Range (Optional)</label>
-              <select
+              <label className="block text-amber-400 font-medium mb-3">Age (Optional)</label>
+              <input
+                type="number"
+                min="18"
+                max="100"
                 value={formData.ageRange || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, ageRange: e.target.value }))}
+                placeholder="Enter your age"
                 className="w-full bg-gray-800 border border-gray-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500"
-              >
-                <option value="">Select</option>
-                {ageRangeOptions.map(range => (
-                  <option key={range} value={range}>{range}</option>
-                ))}
-                <option value="Prefer not to say">Prefer not to say</option>
-              </select>
+              />
             </div>
 
             {/* Nationality */}
