@@ -1,5 +1,10 @@
-import { supabase } from '../lib/supabase';
-import { Rating } from '../types';
+interface SVDUserFactors {
+  [userId: string]: number[];
+}
+
+interface SVDItemFactors {
+  [movieId: string]: number[];
+}
 
 export interface RecommenderConfig {
   // Weight factors for different aspects of recommendation
@@ -19,46 +24,197 @@ export class RecommenderService {
     diversityBoost: 0.1
   };
 
+  private userFactors: SVDUserFactors | null = null;
+  private itemFactors: SVDItemFactors | null = null;
+  private factorsLoaded: boolean = false;
+
   /**
-   * Main recommendation algorithm
-   * This is where you can implement your custom recommendation logic
+   * Load SVD factors from Supabase storage
+   */
+  private async loadSVDFactors(): Promise<void> {
+    if (this.factorsLoaded) return;
+
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      
+      // Load user factors
+      const userFactorsResponse = await fetch(
+        `${supabaseUrl}/storage/v1/object/public/models/svd_user_factors.json`
+      );
+      
+      if (!userFactorsResponse.ok) {
+        throw new Error(`Failed to load user factors: ${userFactorsResponse.status}`);
+      }
+      
+      this.userFactors = await userFactorsResponse.json();
+      
+      // Load item factors
+      const itemFactorsResponse = await fetch(
+        `${supabaseUrl}/storage/v1/object/public/models/svd_item_factors.json`
+      );
+      
+      if (!itemFactorsResponse.ok) {
+        throw new Error(`Failed to load item factors: ${itemFactorsResponse.status}`);
+      }
+      
+      this.itemFactors = await itemFactorsResponse.json();
+      
+      this.factorsLoaded = true;
+      console.log('SVD factors loaded successfully');
+      console.log('User factors count:', Object.keys(this.userFactors || {}).length);
+      console.log('Item factors count:', Object.keys(this.itemFactors || {}).length);
+      
+    } catch (error) {
+      console.error('Error loading SVD factors:', error);
+      this.userFactors = null;
+      this.itemFactors = null;
+      this.factorsLoaded = false;
+      throw error;
+    }
+  }
+
+  /**
+   * Calculate dot product between two vectors
+   */
+  private dotProduct(vectorA: number[], vectorB: number[]): number {
+    if (vectorA.length !== vectorB.length) {
+      throw new Error('Vectors must have the same length');
+    }
+    
+    return vectorA.reduce((sum, a, i) => sum + a * vectorB[i], 0);
+  }
+
+  /**
+   * Create a synthetic user profile based on Phase 1 ratings
+   */
+  private createSyntheticUserProfile(userRatings: any[]): number[] | null {
+    if (!this.itemFactors || !userRatings.length) return null;
+
+    try {
+      // Get the dimensionality from the first item factor
+      const firstItemId = Object.keys(this.itemFactors)[0];
+      const dimensions = this.itemFactors[firstItemId]?.length || 50;
+      
+      // Initialize user profile with zeros
+      const userProfile = new Array(dimensions).fill(0);
+      let totalWeight = 0;
+
+      // Aggregate item factors weighted by user ratings
+      for (const rating of userRatings) {
+        const movieId = String(rating.movieId);
+        const itemFactor = this.itemFactors[movieId];
+        
+        if (itemFactor && rating.rating > 0) {
+          // Normalize rating to [-1, 1] range (assuming ratings are 0-10)
+          const normalizedRating = (rating.rating - 5) / 5;
+          
+          // Add weighted item factors to user profile
+          for (let i = 0; i < dimensions; i++) {
+            userProfile[i] += itemFactor[i] * normalizedRating;
+          }
+          totalWeight += Math.abs(normalizedRating);
+        }
+      }
+
+      // Normalize the user profile
+      if (totalWeight > 0) {
+        for (let i = 0; i < dimensions; i++) {
+          userProfile[i] /= totalWeight;
+        }
+      }
+
+      return userProfile;
+    } catch (error) {
+      console.error('Error creating synthetic user profile:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Main recommendation algorithm using SVD
    */
   async generateRecommendations(
     sessionId: string,
-    userRatings: Rating[]
+    userRatings: any[]
   ): Promise<number[]> {
     try {
-      // Get user's rating patterns
-      const userProfile = this.analyzeUserProfile(userRatings);
+      // Load SVD factors if not already loaded
+      await this.loadSVDFactors();
+
+      if (!this.itemFactors) {
+        console.warn('SVD factors not available, falling back to simple recommender');
+        return this.getFallbackRecommendations();
+      }
+
+      // Filter valid ratings (rating > 0)
+      const validRatings = userRatings.filter(r => r.rating > 0);
       
-      // Get all movies from database
-      const { data: allMovies, error } = await supabase
+      if (validRatings.length === 0) {
+        console.warn('No valid ratings found, using fallback recommendations');
+        return this.getFallbackRecommendations();
+      }
+
+      // Create synthetic user profile from Phase 1 ratings
+      const userProfile = this.createSyntheticUserProfile(validRatings);
+      
+      if (!userProfile) {
+        console.warn('Could not create user profile, using fallback recommendations');
+        return this.getFallbackRecommendations();
+      }
+
+      // Get all Phase 2 movies
+      const { data: phase2Movies, error } = await supabase
         .from('phase2_movies')
-        .select('*');
+        .select('id');
 
       if (error) throw error;
 
+      if (!phase2Movies || phase2Movies.length === 0) {
+        console.warn('No Phase 2 movies found');
+        return [];
+      }
+
       // Get movies user hasn't rated yet
-      const ratedMovieIds = userRatings.map(r => r.movieId);
-      const unratedMovies = allMovies?.filter(movie => 
-        !ratedMovieIds.includes(movie.id)
-      ) || [];
+      const ratedMovieIds = userRatings.map(r => String(r.movieId));
+      const phase2MovieIds = phase2Movies.map(m => String(m.id));
+      const candidateMovieIds = phase2MovieIds.filter(id => !ratedMovieIds.includes(id));
 
-      // Calculate recommendation scores
-      const recommendations = unratedMovies.map(movie => ({
-        movieId: movie.id,
-        score: this.calculateRecommendationScore(movie, userProfile, allMovies || [])
-      }));
+      // Calculate SVD scores for candidate movies
+      const recommendations: { movieId: number; score: number }[] = [];
 
-      // Sort by score and return top recommendations
+      for (const movieId of candidateMovieIds) {
+        const itemFactor = this.itemFactors[movieId];
+        
+        if (itemFactor) {
+          try {
+            // Calculate SVD prediction score
+            const svdScore = this.dotProduct(userProfile, itemFactor);
+            
+            // Add some diversity and randomness
+            const diversityBoost = Math.random() * 0.1;
+            const finalScore = svdScore + diversityBoost;
+            
+            recommendations.push({
+              movieId: parseInt(movieId),
+              score: finalScore
+            });
+          } catch (error) {
+            console.warn(`Error calculating score for movie ${movieId}:`, error);
+          }
+        }
+      }
+
+      // Sort by score (descending) and return top 10
       recommendations.sort((a, b) => b.score - a.score);
-      
-      // Return top 10 movie IDs (or adjust as needed)
-      return recommendations.slice(0, 10).map(r => r.movieId);
+      const topRecommendations = recommendations.slice(0, 10).map(r => r.movieId);
+
+      console.log('SVD recommendations generated:', topRecommendations);
+      console.log('Recommendation scores:', recommendations.slice(0, 10).map(r => ({ id: r.movieId, score: r.score.toFixed(4) })));
+
+      return topRecommendations;
 
     } catch (error) {
-      console.error('Error generating recommendations:', error);
-      // Fallback: return movies marked as recommended in database
+      console.error('Error in SVD recommendation generation:', error);
       return this.getFallbackRecommendations();
     }
   }
@@ -66,7 +222,7 @@ export class RecommenderService {
   /**
    * Analyze user's rating patterns to create a user profile
    */
-  private analyzeUserProfile(ratings: Rating[]) {
+  private analyzeUserProfile(ratings: any[]) {
     const validRatings = ratings.filter(r => r.rating > 0);
     
     if (validRatings.length === 0) {
@@ -80,37 +236,25 @@ export class RecommenderService {
 
     const averageRating = validRatings.reduce((sum, r) => sum + r.rating, 0) / validRatings.length;
     
-    // You can expand this to analyze genre preferences, year preferences, etc.
-    // by joining with movie data
-    
     return {
       averageRating,
-      preferredGenres: [], // TODO: Implement genre analysis
-      preferredYears: [],  // TODO: Implement year analysis
-      preferredDirectors: [] // TODO: Implement director analysis
+      preferredGenres: [],
+      preferredYears: [],
+      preferredDirectors: []
     };
   }
 
   /**
    * Calculate recommendation score for a movie based on user profile
-   * This is the core algorithm - customize this based on your research needs
+   * This is the fallback algorithm when SVD is not available
    */
   private calculateRecommendationScore(movie: any, userProfile: any, allMovies: any[]): number {
     let score = 0;
 
-    // Base score from movie's general appeal (you can use average ratings, popularity, etc.)
-    score += movie.year > 2010 ? 0.2 : 0.1; // Slight preference for newer movies
+    // Base score from movie's general appeal
+    score += movie.year > 2010 ? 0.2 : 0.1;
     
-    // Genre matching (implement based on user's rated movies)
-    // score += this.calculateGenreMatch(movie, userProfile) * this.config.genreWeight;
-    
-    // Year preference matching
-    // score += this.calculateYearMatch(movie, userProfile) * this.config.yearWeight;
-    
-    // Director preference matching
-    // score += this.calculateDirectorMatch(movie, userProfile) * this.config.directorWeight;
-    
-    // Diversity boost (recommend movies from different genres/years)
+    // Diversity boost
     score += this.calculateDiversityBoost(movie, allMovies) * this.config.diversityBoost;
     
     // Add randomness for serendipity
@@ -123,16 +267,14 @@ export class RecommenderService {
    * Calculate diversity boost for a movie
    */
   private calculateDiversityBoost(movie: any, allMovies: any[]): number {
-    // Simple diversity calculation - you can make this more sophisticated
     const genreCount = allMovies.filter(m => m.genre === movie.genre).length;
     const totalMovies = allMovies.length;
     
-    // Less common genres get higher diversity score
     return 1 - (genreCount / totalMovies);
   }
 
   /**
-   * Fallback recommendations when algorithm fails
+   * Fallback recommendations when SVD algorithm fails
    */
   private async getFallbackRecommendations(): Promise<number[]> {
     try {
@@ -144,7 +286,16 @@ export class RecommenderService {
 
       if (error) throw error;
       
-      return phase2Movies?.map(m => m.id) || [];
+      const movieIds = phase2Movies?.map(m => m.id) || [];
+      
+      // Shuffle the array for some randomness
+      for (let i = movieIds.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [movieIds[i], movieIds[j]] = [movieIds[j], movieIds[i]];
+      }
+      
+      console.log('Using fallback recommendations:', movieIds);
+      return movieIds;
     } catch (error) {
       console.error('Error getting fallback recommendations:', error);
       return [];
@@ -163,14 +314,13 @@ export class RecommenderService {
    */
   async logRecommendation(sessionId: string, recommendedMovieIds: number[]) {
     try {
-      // You can create a separate table to log recommendations for analysis
-      console.log('Recommended movies for session', sessionId, ':', recommendedMovieIds);
+      console.log('SVD recommendations for session', sessionId, ':', recommendedMovieIds);
       
       // Optional: Store in database for later analysis
       // await supabase.from('recommendations_log').insert({
       //   session_id: sessionId,
       //   recommended_movies: recommendedMovieIds,
-      //   algorithm_version: '1.0',
+      //   algorithm_version: 'SVD-1.0',
       //   created_at: new Date().toISOString()
       // });
     } catch (error) {
@@ -178,5 +328,8 @@ export class RecommenderService {
     }
   }
 }
+
+// Import supabase here to avoid circular dependency
+import { supabase } from '../lib/supabase';
 
 export const recommenderService = new RecommenderService();
