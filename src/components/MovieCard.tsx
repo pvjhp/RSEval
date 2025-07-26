@@ -149,7 +149,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                       <div className="relative group">
                         <Info size={16} className="text-gray-400 hover:text-amber-400 cursor-help" />
                         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none w-64 z-10">
-                          How different is this movie from mainstream or typical movies in terms of cultural background, themes, or perspectives?
+                          How different is this recommended movie from other movies in this list?
                         </div>
                       </div>
                     </div>
@@ -166,7 +166,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                       <div className="relative group">
                         <Info size={16} className="text-gray-400 hover:text-amber-400 cursor-help" />
                         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none w-64 z-10">
-                          How new, fresh, or innovative is this movie? Does it present original ideas, unique storytelling, or creative approaches?
+                          How new, fresh, or unfamiliar is this movie to you?
                         </div>
                       </div>
                     </div>
@@ -183,7 +183,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                       <div className="relative group">
                         <Info size={16} className="text-gray-400 hover:text-amber-400 cursor-help" />
                         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none w-64 z-10">
-                          How surprising or unexpected is this recommendation for you? Does it introduce you to something you wouldn't normally discover?
+                          How surprising or unexpected is this recommended movie for you?
                         </div>
                       </div>
                     </div>
