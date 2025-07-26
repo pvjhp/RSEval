@@ -37,13 +37,19 @@ export class RecommenderService {
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       
+      console.log('Loading SVD factors from:', supabaseUrl);
+      
       // Load user factors
       const userFactorsResponse = await fetch(
         `${supabaseUrl}/storage/v1/object/public/models/svd_user_factors.json`
       );
       
       if (!userFactorsResponse.ok) {
-        throw new Error(`Failed to load user factors: ${userFactorsResponse.status}`);
+        console.warn(`Failed to load user factors: ${userFactorsResponse.status}`);
+        this.userFactors = null;
+        this.itemFactors = null;
+        this.factorsLoaded = false;
+        return;
       }
       
       this.userFactors = await userFactorsResponse.json();
@@ -54,7 +60,11 @@ export class RecommenderService {
       );
       
       if (!itemFactorsResponse.ok) {
-        throw new Error(`Failed to load item factors: ${itemFactorsResponse.status}`);
+        console.warn(`Failed to load item factors: ${itemFactorsResponse.status}`);
+        this.userFactors = null;
+        this.itemFactors = null;
+        this.factorsLoaded = false;
+        return;
       }
       
       this.itemFactors = await itemFactorsResponse.json();
@@ -69,7 +79,6 @@ export class RecommenderService {
       this.userFactors = null;
       this.itemFactors = null;
       this.factorsLoaded = false;
-      throw error;
     }
   }
 
@@ -138,6 +147,9 @@ export class RecommenderService {
     userRatings: any[]
   ): Promise<number[]> {
     try {
+      console.log('Generating recommendations for session:', sessionId);
+      console.log('User ratings count:', userRatings.length);
+      
       // Load SVD factors if not already loaded
       await this.loadSVDFactors();
 
@@ -148,6 +160,7 @@ export class RecommenderService {
 
       // Filter valid ratings (rating > 0)
       const validRatings = userRatings.filter(r => r.rating > 0);
+      console.log('Valid ratings count:', validRatings.length);
       
       if (validRatings.length === 0) {
         console.warn('No valid ratings found, using fallback recommendations');
@@ -162,6 +175,8 @@ export class RecommenderService {
         return this.getFallbackRecommendations();
       }
 
+      console.log('User profile created with dimensions:', userProfile.length);
+
       // Get all Phase 2 movies
       const { data: phase2Movies, error } = await supabase
         .from('phase2_movies')
@@ -174,10 +189,14 @@ export class RecommenderService {
         return [];
       }
 
+      console.log('Phase 2 movies count:', phase2Movies.length);
+
       // Get movies user hasn't rated yet
       const ratedMovieIds = userRatings.map(r => String(r.movieId));
       const phase2MovieIds = phase2Movies.map(m => String(m.id));
       const candidateMovieIds = phase2MovieIds.filter(id => !ratedMovieIds.includes(id));
+
+      console.log('Candidate movies for recommendation:', candidateMovieIds.length);
 
       // Calculate SVD scores for candidate movies
       const recommendations: { movieId: number; score: number }[] = [];
@@ -201,8 +220,12 @@ export class RecommenderService {
           } catch (error) {
             console.warn(`Error calculating score for movie ${movieId}:`, error);
           }
+        } else {
+          console.warn(`No item factor found for movie ${movieId}`);
         }
       }
+
+      console.log('Recommendations calculated:', recommendations.length);
 
       // Sort by score (descending) and return top 10
       recommendations.sort((a, b) => b.score - a.score);
@@ -278,10 +301,11 @@ export class RecommenderService {
    */
   private async getFallbackRecommendations(): Promise<number[]> {
     try {
+      console.log('Using fallback recommendation algorithm');
+      
       const { data: phase2Movies, error } = await supabase
         .from('phase2_movies')
         .select('id')
-        .order('id')
         .limit(10);
 
       if (error) throw error;

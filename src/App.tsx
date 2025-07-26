@@ -295,14 +295,28 @@ function App() {
       } else {
         // Use recommender algorithm to get personalized recommendations
         if (sessionId) {
+          console.log('Requesting recommendations for session:', sessionId);
+          console.log('Current ratings for recommendation:', ratings);
+          
           const recommendedIds = await recommenderService.generateRecommendations(sessionId, ratings);
+          
+          console.log('Received recommended IDs:', recommendedIds);
           
           if (recommendedIds.length > 0) {
             const { data, error } = await supabase
               .from('phase2_movies')
               .select('*')
               .in('id', recommendedIds)
-              .order('id');
+              .then(result => {
+                if (result.data && recommendedIds.length > 0) {
+                  // Sort movies according to recommendation order
+                  const sortedMovies = recommendedIds.map(id => 
+                    result.data.find(movie => movie.id === id)
+                  ).filter(Boolean);
+                  return { ...result, data: sortedMovies };
+                }
+                return result;
+              });
 
             if (error) throw error;
             
@@ -315,14 +329,23 @@ function App() {
               poster: `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/posters/${movie.id}.jpg`
             }));
             
+            console.log('Final recommended movies:', moviesWithStoragePoster.map(m => ({ id: m.id, title: m.title })));
             setCurrentMovies(moviesWithStoragePoster);
           } else {
             // Fallback to first 10 Phase 2 movies
+            console.log('No recommendations generated, using fallback');
             const { data, error } = await supabase
               .from('phase2_movies')
               .select('*')
-              .order('id')
-              .limit(10);
+              .limit(10)
+              .then(result => {
+                if (result.data) {
+                  // Shuffle the movies randomly for fallback
+                  const shuffled = [...result.data].sort(() => Math.random() - 0.5);
+                  return { ...result, data: shuffled };
+                }
+                return result;
+              });
 
             if (error) throw error;
             
