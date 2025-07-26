@@ -199,7 +199,7 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ onComp
             {/* RS Experience */}
             <div className="mb-6">
               <label className="block text-amber-400 font-medium mb-3">
-                Have you used any recommnedation systems before? *
+                Have you used any recommendation systems before? *
               </label>
               <select
                 value={formData.primaryStreamingService}
