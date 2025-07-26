@@ -23,13 +23,11 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ onComp
   const [errors, setErrors] = useState<string[]>([]);
 
   const movieFrequencyOptions = [
-    'Daily',
-    'Several times a week',
-    'Once a week',
-    'Several times a month',
-    'Once a month',
-    'Less than once a month',
-    'Rarely'
+    '0-1',
+    '2-3',
+    '4-6',
+    '7-10',
+    'More than 10'
   ];
 
   const streamingServiceOptions = [
