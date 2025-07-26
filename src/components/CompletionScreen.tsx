@@ -49,7 +49,7 @@ export const CompletionScreen: React.FC<CompletionScreenProps> = ({
             <span className="text-amber-400 font-semibold text-lg">Thank You!</span>
           </div>
           <p className="text-white text-lg text-center leading-relaxed">
-            Thank you for participating in our movie rating study! Your valuable feedback helps us understand movie preferences and improve recommendation systems. Your contribution will advance research in personalized content discovery.
+            Thank you for participating in our study! You can now close the window.
           </p>
         </div>
       </div>
