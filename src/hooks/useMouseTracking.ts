@@ -57,7 +57,20 @@ export const useMouseTracking = (sessionId: string | null, isActive: boolean = t
 
   const getElementDescription = (element: Element): string => {
     const tagName = element.tagName.toLowerCase();
-    const className = element.className ? `.${element.className.split(' ').join('.')}` : '';
+    
+    // Handle both HTML and SVG elements - SVG className is SVGAnimatedString
+    let className = '';
+    if (element.className) {
+      const classValue = typeof element.className === 'string' 
+        ? element.className 
+        : element.className.baseVal || '';
+      
+      if (classValue) {
+        const classes = classValue.split(' ').filter(cls => cls.trim() !== '');
+        className = classes.length > 0 ? `.${classes.join('.')}` : '';
+      }
+    }
+    
     const id = element.id ? `#${element.id}` : '';
     return `${tagName}${id}${className}`.substring(0, 100);
   };
