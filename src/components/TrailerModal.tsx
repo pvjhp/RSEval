@@ -40,21 +40,36 @@ export const TrailerModal: React.FC<TrailerModalProps> = ({
     if (url.includes('drive.google.com/file/d/')) {
       const fileId = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)?.[1];
       if (fileId) {
-        return `https://drive.google.com/file/d/${fileId}/preview?usp=sharing&cc_load_policy=1`;
+        return `https://drive.google.com/file/d/${fileId}/preview?usp=sharing&cc_load_policy=1&hl=en&cc_lang_pref=en&autoplay=0`;
       }
     }
     
     // Google Drive direct preview links
     if (url.includes('drive.google.com') && url.includes('/preview')) {
-      const baseUrl = url.includes('usp=sharing') ? url : `${url}${url.includes('?') ? '&' : '?'}usp=sharing`;
-      return baseUrl.includes('cc_load_policy=1') ? baseUrl : `${baseUrl}&cc_load_policy=1`;
+      let baseUrl = url.includes('usp=sharing') ? url : `${url}${url.includes('?') ? '&' : '?'}usp=sharing`;
+      
+      // Add subtitle parameters if not present
+      if (!baseUrl.includes('cc_load_policy=1')) {
+        baseUrl += '&cc_load_policy=1';
+      }
+      if (!baseUrl.includes('hl=en')) {
+        baseUrl += '&hl=en';
+      }
+      if (!baseUrl.includes('cc_lang_pref=en')) {
+        baseUrl += '&cc_lang_pref=en';
+      }
+      if (!baseUrl.includes('autoplay=0')) {
+        baseUrl += '&autoplay=0';
+      }
+      
+      return baseUrl;
     }
     
     // Google Drive view links
     if (url.includes('drive.google.com/open?id=')) {
       const fileId = url.match(/id=([a-zA-Z0-9_-]+)/)?.[1];
       if (fileId) {
-        return `https://drive.google.com/file/d/${fileId}/preview?usp=sharing&cc_load_policy=1`;
+        return `https://drive.google.com/file/d/${fileId}/preview?usp=sharing&cc_load_policy=1&hl=en&cc_lang_pref=en&autoplay=0`;
       }
     }
     
