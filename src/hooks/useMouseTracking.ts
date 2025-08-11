@@ -151,5 +151,3 @@ export const useMouseTracking = (sessionId: string | null, isActive: boolean = t
     }
   };
 };
-
-export { useMouseTracking }
