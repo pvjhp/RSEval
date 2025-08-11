@@ -112,10 +112,11 @@ function App() {
 
   // Initialize session and load initial movies when starting from intro
   useEffect(() => {
-    if (phase === 'initial' && !sessionId && !isRestoringSession) {
+    if (phase === 'initial' && !sessionId && !isRestoringSession && !isInitializing) {
+      console.log('Initializing app from intro phase');
       initializeApp();
     }
-  }, [phase, isRestoringSession]);
+  }, [phase, isRestoringSession, isInitializing]);
 
   // Record screen size when starting Phase 1
   useEffect(() => {
@@ -139,10 +140,12 @@ function App() {
   }, [pendingRatings, sessionId]);
 
   const initializeApp = async () => {
+    console.log('Starting app initialization');
     setIsInitializing(true);
     try {
       await initializeSession();
       await fetchMovies('initial');
+      console.log('App initialization completed successfully');
     } catch (error) {
       console.error('Error initializing app:', error);
       setErrorMovies('Failed to initialize application');
@@ -227,6 +230,7 @@ function App() {
     });
   };
   const initializeSession = async () => {
+    console.log('Creating new session');
     const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const startTime = new Date().toISOString();
     
@@ -236,6 +240,7 @@ function App() {
     setMinimumRatingsRequired(randomMinimum);
     
     try {
+      console.log('Inserting session into database');
       const { data, error } = await supabase
         .from('user_sessions')
         .insert({
@@ -247,14 +252,20 @@ function App() {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database session creation failed:', error);
+        throw error;
+      }
+      
       setSessionId(data.id);
       setSessionStartTime(Date.now());
       console.log('Session created:', data.id, 'Minimum required:', randomMinimum);
     } catch (error) {
       console.error('Error creating session:', error);
       // Continue with local session if database fails
-      setSessionId(`local_${Date.now()}`);
+      const localSessionId = `local_${Date.now()}`;
+      setSessionId(localSessionId);
+      console.log('Using local session:', localSessionId);
     }
   };
 
@@ -263,33 +274,38 @@ function App() {
     setErrorMovies(null);
     
     try {
+      console.log('Fetching movies of type:', type);
+      console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+      
       if (type === 'initial') {
         // Fetch initial movies (not recommended) - now 30 movies
         const { data, error } = await supabase
           .from('movies')
           .select('*')
-          .order('id')
-          .then(result => {
-            if (result.data) {
-              // Shuffle the movies randomly
-              const shuffled = [...result.data].sort(() => Math.random() - 0.5);
-              return { ...result, data: shuffled };
-            }
-            return result;
-          });
+          .order('id');
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching initial movies:', error);
+          throw error;
+        }
         
         if (!data || data.length === 0) {
+          console.warn('No initial movies found in database');
           throw new Error('No initial movies found in database');
         }
 
+        console.log('Initial movies fetched:', data.length);
+        
+        // Shuffle the movies randomly
+        const shuffled = [...data].sort(() => Math.random() - 0.5);
+
         // Update poster URLs to use Supabase storage
-        const moviesWithStoragePoster = data.map(movie => ({
+        const moviesWithStoragePoster = shuffled.map(movie => ({
           ...movie,
           poster: `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/posters/${movie.id}.jpg`
         }));
         
+        console.log('Movies with updated posters:', moviesWithStoragePoster.length);
         setCurrentMovies(moviesWithStoragePoster);
         setCurrentMoviesPhase('initial');
       } else {
@@ -306,56 +322,65 @@ function App() {
             const { data, error } = await supabase
               .from('phase2_movies')
               .select('*')
-              .in('id', recommendedIds)
-              .then(result => {
-                if (result.data && recommendedIds.length > 0) {
-                  // Sort movies according to recommendation order
-                  const sortedMovies = recommendedIds.map(id => 
-                    result.data.find(movie => movie.id === id)
-                  ).filter(Boolean);
-                  return { ...result, data: sortedMovies };
-                }
-                return result;
-              });
+              .in('id', recommendedIds);
 
-            if (error) throw error;
+            if (error) {
+              console.error('Error fetching recommended movies:', error);
+              throw error;
+            }
             
-            // Log the recommendation for analysis
-            await recommenderService.logRecommendation(sessionId, recommendedIds);
+            if (data && recommendedIds.length > 0) {
+              // Sort movies according to recommendation order
+              const sortedMovies = recommendedIds.map(id => 
+                data.find(movie => movie.id === id)
+              ).filter(Boolean);
+              
+              console.log('Recommended movies sorted:', sortedMovies.length);
             
-            // Update poster URLs to use Supabase storage
-            const moviesWithStoragePoster = (data || []).map(movie => ({
-              ...movie,
-              poster: `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/posters/${movie.id}.jpg`
-            }));
+              // Log the recommendation for analysis
+              await recommenderService.logRecommendation(sessionId, recommendedIds);
             
-            console.log('Final recommended movies:', moviesWithStoragePoster.map(m => ({ id: m.id, title: m.title })));
-            setCurrentMovies(moviesWithStoragePoster);
+              // Update poster URLs to use Supabase storage
+              const moviesWithStoragePoster = sortedMovies.map(movie => ({
+                ...movie,
+                poster: `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/posters/${movie.id}.jpg`
+              }));
+            
+              console.log('Final recommended movies:', moviesWithStoragePoster.map(m => ({ id: m.id, title: m.title })));
+              setCurrentMovies(moviesWithStoragePoster);
+            } else {
+              console.warn('No recommended movies data returned');
+              setCurrentMovies([]);
+            }
           } else {
             // Fallback to first 10 Phase 2 movies
             console.log('No recommendations generated, using fallback');
             const { data, error } = await supabase
               .from('phase2_movies')
               .select('*')
-              .limit(10)
-              .then(result => {
-                if (result.data) {
-                  // Shuffle the movies randomly for fallback
-                  const shuffled = [...result.data].sort(() => Math.random() - 0.5);
-                  return { ...result, data: shuffled };
-                }
-                return result;
-              });
+              .limit(10);
 
-            if (error) throw error;
+            if (error) {
+              console.error('Error fetching fallback movies:', error);
+              throw error;
+            }
             
-            // Update poster URLs to use Supabase storage
-            const moviesWithStoragePoster = (data || []).map(movie => ({
-              ...movie,
-              poster: `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/posters/${movie.id}.jpg`
-            }));
+            if (data) {
+              // Shuffle the movies randomly for fallback
+              const shuffled = [...data].sort(() => Math.random() - 0.5);
             
-            setCurrentMovies(moviesWithStoragePoster);
+              // Update poster URLs to use Supabase storage
+              const moviesWithStoragePoster = shuffled.map(movie => ({
+                ...movie,
+                poster: `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/posters/${movie.id}.jpg`
+              }));
+            
+              console.log('Fallback movies set:', moviesWithStoragePoster.length);
+              setCurrentMovies(moviesWithStoragePoster);
+            } else {
+              console.warn('No fallback movies data returned');
+              setCurrentMovies([]);
+            }
           }
           setCurrentMoviesPhase('recommended');
         }
@@ -363,6 +388,7 @@ function App() {
     } catch (error) {
       console.error(`Error fetching ${type} movies:`, error);
       setErrorMovies(`Failed to load ${type} movies`);
+      setCurrentMovies([]); // Ensure movies are cleared on error
     } finally {
       setLoadingMovies(false);
     }
@@ -741,11 +767,17 @@ function App() {
             </div>
           </div>
         ) : currentMovies.length === 0 ? (
-          !isInitializing && (
+          !isInitializing && !loadingMovies && (
             <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
               <AlertCircle className="text-yellow-500 mx-auto mb-4" size={48} />
-              <p className="text-gray-400 text-lg">No movies available</p>
+              <p className="text-gray-400 text-lg mb-4">No movies available</p>
+              <button
+                onClick={() => fetchMovies(phase === 'recommendation' ? 'recommended' : 'initial')}
+                className="bg-amber-500 hover:bg-amber-600 text-black font-semibold py-2 px-4 rounded-lg transition-colors"
+              >
+                Retry Loading Movies
+              </button>
             </div>
             </div>
           )
