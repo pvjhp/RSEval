@@ -146,9 +146,9 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                   <div className="relative">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-amber-400 font-medium text-sm">How diverse is this movie? (0 = not diverse, 10 = very diverse)</span>
-                      <div className="relative group">
+                      <div className="relative group z-20">
                         <Info size={16} className="text-gray-400 hover:text-amber-400 cursor-help" />
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none w-64 z-10">
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 border border-gray-600 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none w-64 z-30 shadow-xl">
                           How different is this recommended movie from other movies in this list?
                         </div>
                       </div>
@@ -163,9 +163,9 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                   <div className="relative">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-amber-400 font-medium text-sm">How novel is this movie? (0 = not novel, 10 = very novel)</span>
-                      <div className="relative group">
+                      <div className="relative group z-20">
                         <Info size={16} className="text-gray-400 hover:text-amber-400 cursor-help" />
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none w-64 z-10">
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 border border-gray-600 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none w-64 z-30 shadow-xl">
                           How new, fresh, or unfamiliar is this movie to you?
                         </div>
                       </div>
@@ -180,9 +180,9 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                   <div className="relative">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-amber-400 font-medium text-sm">How serendipitous is this movie? (0 = not serendipitous, 10 = very serendipitous)</span>
-                      <div className="relative group">
+                      <div className="relative group z-20">
                         <Info size={16} className="text-gray-400 hover:text-amber-400 cursor-help" />
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none w-64 z-10">
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 border border-gray-600 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none w-64 z-30 shadow-xl">
                           How surprising or unexpected is this recommended movie for you?
                         </div>
                       </div>

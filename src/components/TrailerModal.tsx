@@ -24,7 +24,7 @@ export const TrailerModal: React.FC<TrailerModalProps> = ({
       const match = url.match(/player\.vimeo\.com\/video\/(\d+)/);
       if (match) {
         const videoId = match[1];
-        return `https://player.vimeo.com/video/${videoId}?title=0&amp;byline=0&amp;portrait=0&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479`;
+        return `https://player.vimeo.com/video/${videoId}?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479&texttrack=en`;
       }
     }
     
@@ -32,7 +32,7 @@ export const TrailerModal: React.FC<TrailerModalProps> = ({
     if (url.includes('vimeo.com/') && !url.includes('player.vimeo.com')) {
       const videoId = url.split('vimeo.com/')[1]?.split('?')[0];
       if (videoId) {
-        return `https://player.vimeo.com/video/${videoId}?title=0&amp;byline=0&amp;portrait=0&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479`;
+        return `https://player.vimeo.com/video/${videoId}?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479&texttrack=en`;
       }
     }
     
@@ -59,19 +59,19 @@ export const TrailerModal: React.FC<TrailerModalProps> = ({
     
     // YouTube embed links (already in embed format)
     if (url.includes('youtube.com/embed/')) {
-      return url;
+      return url.includes('cc_load_policy=1') ? url : `${url}${url.includes('?') ? '&' : '?'}cc_load_policy=1&cc_lang_pref=en`;
     }
     
     // YouTube watch links
     if (url.includes('youtube.com/watch?v=')) {
       const videoId = url.split('v=')[1]?.split('&')[0];
-      return `https://www.youtube.com/embed/${videoId}`;
+      return `https://www.youtube.com/embed/${videoId}?cc_load_policy=1&cc_lang_pref=en`;
     }
     
     // YouTube short links
     if (url.includes('youtu.be/')) {
       const videoId = url.split('youtu.be/')[1]?.split('?')[0];
-      return `https://www.youtube.com/embed/${videoId}`;
+      return `https://www.youtube.com/embed/${videoId}?cc_load_policy=1&cc_lang_pref=en`;
     }
     
     // Return original URL if no conversion needed
