@@ -40,20 +40,21 @@ export const TrailerModal: React.FC<TrailerModalProps> = ({
     if (url.includes('drive.google.com/file/d/')) {
       const fileId = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)?.[1];
       if (fileId) {
-        return `https://drive.google.com/file/d/${fileId}/preview?usp=sharing`;
+        return `https://drive.google.com/file/d/${fileId}/preview?usp=sharing&cc_load_policy=1`;
       }
     }
     
     // Google Drive direct preview links
     if (url.includes('drive.google.com') && url.includes('/preview')) {
-      return url.includes('usp=sharing') ? url : `${url}${url.includes('?') ? '&' : '?'}usp=sharing`;
+      const baseUrl = url.includes('usp=sharing') ? url : `${url}${url.includes('?') ? '&' : '?'}usp=sharing`;
+      return baseUrl.includes('cc_load_policy=1') ? baseUrl : `${baseUrl}&cc_load_policy=1`;
     }
     
     // Google Drive view links
     if (url.includes('drive.google.com/open?id=')) {
       const fileId = url.match(/id=([a-zA-Z0-9_-]+)/)?.[1];
       if (fileId) {
-        return `https://drive.google.com/file/d/${fileId}/preview?usp=sharing`;
+        return `https://drive.google.com/file/d/${fileId}/preview?usp=sharing&cc_load_policy=1`;
       }
     }
     
