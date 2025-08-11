@@ -14,6 +14,9 @@ import { Film, Loader2, AlertCircle } from 'lucide-react';
 // Session persistence utilities
 const SESSION_STORAGE_KEY = 'cinerate_session';
 
+// Add cache buster to prevent stale data
+const CACHE_BUSTER = Date.now();
+
 interface SessionState {
   sessionId: string;
   phase: AppPhase;
@@ -46,6 +49,9 @@ const loadSessionFromStorage = (): SessionState | null => {
 const clearSessionFromStorage = () => {
   try {
     localStorage.removeItem(SESSION_STORAGE_KEY);
+    // Also clear any other cached data
+    localStorage.removeItem('supabase.auth.token');
+    sessionStorage.clear();
   } catch (error) {
     console.error('Error clearing session from localStorage:', error);
   }
@@ -279,6 +285,7 @@ function App() {
     console.log('Fetching movies of type:', type);
     console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
     console.log('Current phase:', phase);
+    console.log('Cache buster timestamp:', Date.now());
     
     setLoadingMovies(true);
     setErrorMovies(null);
@@ -315,7 +322,7 @@ function App() {
         // Update poster URLs to use Supabase storage
         const moviesWithStoragePoster = shuffled.map(movie => ({
           ...movie,
-          poster: `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/posters/${movie.id}.jpg`
+          poster: `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/posters/${movie.id}.jpg?t=${CACHE_BUSTER}`
         }));
         
         console.log('Movies with updated posters:', moviesWithStoragePoster.length);
@@ -358,7 +365,7 @@ function App() {
               // Update poster URLs to use Supabase storage
               const moviesWithStoragePoster = sortedMovies.map(movie => ({
                 ...movie,
-                poster: `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/posters/${movie.id}.jpg`
+                poster: `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/posters/${movie.id}.jpg?t=${CACHE_BUSTER}`
               }));
             
               console.log('Final recommended movies:', moviesWithStoragePoster.map(m => ({ id: m.id, title: m.title })));
@@ -387,7 +394,7 @@ function App() {
               // Update poster URLs to use Supabase storage
               const moviesWithStoragePoster = shuffled.map(movie => ({
                 ...movie,
-                poster: `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/posters/${movie.id}.jpg`
+                poster: `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/posters/${movie.id}.jpg?t=${CACHE_BUSTER}`
               }));
             
               console.log('Fallback movies set:', moviesWithStoragePoster.length);
