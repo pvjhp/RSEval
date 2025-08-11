@@ -88,6 +88,10 @@ function App() {
         if (savedSession.currentMoviesPhase) {
           await fetchMovies(savedSession.currentMoviesPhase);
         }
+      } else {
+        console.log('No saved session found or session is at intro phase, starting fresh');
+        // Ensure we start at intro phase for new sessions
+        setPhase('intro');
       }
       setIsRestoringSession(false);
     };
@@ -110,13 +114,6 @@ function App() {
     }
   }, [sessionId, phase, ratings, sessionStartTime, minimumRatingsRequired, currentMoviesPhase, isRestoringSession]);
 
-  // Initialize session and load initial movies when starting from intro
-  useEffect(() => {
-    if (phase === 'initial' && !sessionId && !isRestoringSession && !isInitializing) {
-      console.log('Initializing app from intro phase');
-      initializeApp();
-    }
-  }, [phase, isRestoringSession, isInitializing]);
 
   // Record screen size when starting Phase 1
   useEffect(() => {
@@ -148,7 +145,7 @@ function App() {
       console.log('App initialization completed successfully');
     } catch (error) {
       console.error('Error initializing app:', error);
-      setErrorMovies('Failed to initialize application');
+      setErrorMovies(`Failed to initialize application: ${error.message || 'Unknown error'}`);
     } finally {
       setIsInitializing(false);
     }
@@ -254,35 +251,49 @@ function App() {
 
       if (error) {
         console.error('Database session creation failed:', error);
-        throw error;
+        // Don't throw error, continue with local session
+        console.log('Continuing with local session due to database error');
       }
       
-      setSessionId(data.id);
+      if (data && data.id) {
+        setSessionId(data.id);
+        console.log('Database session created:', data.id, 'Minimum required:', randomMinimum);
+      } else {
+        // Use local session if database fails
+        const localSessionId = `local_${Date.now()}`;
+        setSessionId(localSessionId);
+        console.log('Using local session:', localSessionId, 'Minimum required:', randomMinimum);
+      }
       setSessionStartTime(Date.now());
-      console.log('Session created:', data.id, 'Minimum required:', randomMinimum);
     } catch (error) {
       console.error('Error creating session:', error);
       // Continue with local session if database fails
       const localSessionId = `local_${Date.now()}`;
       setSessionId(localSessionId);
-      console.log('Using local session:', localSessionId);
+      console.log('Using local session due to error:', localSessionId, 'Minimum required:', randomMinimum);
     }
   };
 
   const fetchMovies = async (type: 'initial' | 'recommended') => {
+    console.log('=== FETCH MOVIES START ===');
+    console.log('Fetching movies of type:', type);
+    console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+    console.log('Current phase:', phase);
+    
     setLoadingMovies(true);
     setErrorMovies(null);
     
     try {
-      console.log('Fetching movies of type:', type);
-      console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
       
       if (type === 'initial') {
+        console.log('Fetching initial movies from movies table...');
         // Fetch initial movies (not recommended) - now 30 movies
         const { data, error } = await supabase
           .from('movies')
           .select('*')
           .order('id');
+
+        console.log('Database query result:', { data: data?.length || 0, error });
 
         if (error) {
           console.error('Error fetching initial movies:', error);
@@ -291,7 +302,9 @@ function App() {
         
         if (!data || data.length === 0) {
           console.warn('No initial movies found in database');
-          throw new Error('No initial movies found in database');
+          setErrorMovies('No movies found in database. Please check your database connection.');
+          setCurrentMovies([]);
+          return;
         }
 
         console.log('Initial movies fetched:', data.length);
@@ -306,8 +319,10 @@ function App() {
         }));
         
         console.log('Movies with updated posters:', moviesWithStoragePoster.length);
+        console.log('Sample movie:', moviesWithStoragePoster[0]);
         setCurrentMovies(moviesWithStoragePoster);
         setCurrentMoviesPhase('initial');
+        console.log('=== INITIAL MOVIES SET SUCCESSFULLY ===');
       } else {
         // Use recommender algorithm to get personalized recommendations
         if (sessionId) {
@@ -387,10 +402,11 @@ function App() {
       }
     } catch (error) {
       console.error(`Error fetching ${type} movies:`, error);
-      setErrorMovies(`Failed to load ${type} movies`);
+      setErrorMovies(`Failed to load ${type} movies: ${error.message || 'Unknown error'}`);
       setCurrentMovies([]); // Ensure movies are cleared on error
     } finally {
       setLoadingMovies(false);
+      console.log('=== FETCH MOVIES END ===');
     }
   };
 
@@ -606,7 +622,13 @@ function App() {
   };
 
   const handleStartFromIntro = () => {
+    console.log('Starting from intro, initializing app...');
     setPhase('initial');
+    // Initialize app when transitioning from intro to initial
+    if (!sessionId && !isInitializing) {
+      console.log('No session exists, initializing new session and loading movies');
+      initializeApp();
+    }
   };
 
   const handleGetRecommendations = async () => {
@@ -769,16 +791,27 @@ function App() {
         ) : currentMovies.length === 0 ? (
           !isInitializing && !loadingMovies && (
             <div className="flex items-center justify-center min-h-96">
-            <div className="text-center">
-              <AlertCircle className="text-yellow-500 mx-auto mb-4" size={48} />
-              <p className="text-gray-400 text-lg mb-4">No movies available</p>
-              <button
-                onClick={() => fetchMovies(phase === 'recommendation' ? 'recommended' : 'initial')}
-                className="bg-amber-500 hover:bg-amber-600 text-black font-semibold py-2 px-4 rounded-lg transition-colors"
-              >
-                Retry Loading Movies
-              </button>
-            </div>
+              <div className="text-center">
+                <AlertCircle className="text-yellow-500 mx-auto mb-4" size={48} />
+                <p className="text-gray-400 text-lg mb-4">No movies available</p>
+                <p className="text-gray-500 text-sm mb-4">
+                  Phase: {phase}, Session ID: {sessionId || 'None'}, Loading: {loadingMovies ? 'Yes' : 'No'}
+                </p>
+                <button
+                  onClick={() => {
+                    console.log('Retry button clicked, current state:', { phase, sessionId, loadingMovies });
+                    if (phase === 'initial' && !sessionId) {
+                      console.log('No session, initializing app...');
+                      initializeApp();
+                    } else {
+                      fetchMovies(phase === 'recommendation' ? 'recommended' : 'initial');
+                    }
+                  }}
+                  className="bg-amber-500 hover:bg-amber-600 text-black font-semibold py-2 px-4 rounded-lg transition-colors"
+                >
+                  Retry Loading Movies
+                </button>
+              </div>
             </div>
           )
         ) : (
