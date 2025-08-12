@@ -151,61 +151,11 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ onComp
               </div>
             </div>
 
-            {/* Streaming Services */}
-            <div className="mb-6">
-              <label className="block text-amber-400 font-medium mb-3">
-                Which streaming services do you use? (Select all that apply) *
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {streamingServiceOptions.map(service => (
-                  <label key={service} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.streamingServices.includes(service)}
-                      onChange={(e) => handleStreamingServiceChange(service, e.target.checked)}
-                      className="mr-3 text-amber-500 focus:ring-amber-500"
-                    />
-                    <span className="text-gray-300">{service}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* RS Experience */}
-            <div className="mb-6">
-              <label className="block text-amber-400 font-medium mb-3">
-                Have you used any recommendation systems before? *
-              </label>
-              <div className="flex gap-6">
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="recommendationExperience"
-                    value="Yes"
-                    checked={formData.primaryStreamingService === 'Yes'}
-                    onChange={(e) => setFormData(prev => ({ ...prev, primaryStreamingService: e.target.value }))}
-                    className="mr-3 text-amber-500 focus:ring-amber-500"
-                  />
-                  <span className="text-gray-300">Yes</span>
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="recommendationExperience"
-                    value="No"
-                    checked={formData.primaryStreamingService === 'No'}
-                    onChange={(e) => setFormData(prev => ({ ...prev, primaryStreamingService: e.target.value }))}
-                    className="mr-3 text-amber-500 focus:ring-amber-500"
-                  />
-                  <span className="text-gray-300">No</span>
-                </label>
-              </div>
-            </div>
 
             {/* Attention Check */}
             <div className="mb-6">
               <label className="block text-amber-400 font-medium mb-3">
-                Attention Check: Please select "Option C" for this question *
+                To help us with the survey, please select "Option C" for this question. *
               </label>
               <select
                 value={formData.attentionCheck}
@@ -281,35 +231,6 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ onComp
               />
             </div>
 
-            {/* Nationality */}
-            <div className="mb-6">
-              <label className="block text-amber-400 font-medium mb-3 flex items-center">
-                <Globe className="mr-2" size={20} />
-                Nationality (Optional)
-              </label>
-              <input
-                type="text"
-                value={formData.nationality || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, nationality: e.target.value }))}
-                placeholder="e.g., American, British, etc."
-                className="w-full bg-gray-800 border border-gray-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500"
-              />
-            </div>
-
-            {/* Occupation */}
-            <div className="mb-6">
-              <label className="block text-amber-400 font-medium mb-3 flex items-center">
-                <Briefcase className="mr-2" size={20} />
-                Occupation (Optional)
-              </label>
-              <input
-                type="text"
-                value={formData.occupation || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, occupation: e.target.value }))}
-                placeholder="e.g., Student, Engineer, Teacher, etc."
-                className="w-full bg-gray-800 border border-gray-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500"
-              />
-            </div>
 
             {/* Additional Comments */}
             <div className="mb-6">
