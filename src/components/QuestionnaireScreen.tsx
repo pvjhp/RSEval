@@ -30,18 +30,6 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ onComp
     'More than 10'
   ];
 
-  const streamingServiceOptions = [
-    'Netflix',
-    'Amazon Prime Video',
-    'Disney+',
-    'HBO Max',
-    'Hulu',
-    'Apple TV+',
-    'Paramount+',
-    'YouTube Premium',
-    'Other',
-    'None'
-  ];
 
   const genreOptions = [
     'Action',
