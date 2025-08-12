@@ -92,13 +92,6 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ onComp
       newErrors.push('Movie watching frequency is required');
     }
 
-    if (formData.streamingServices.length === 0) {
-      newErrors.push('At least one streaming service selection is required');
-    }
-
-    if (!formData.primaryStreamingService) {
-      newErrors.push('Primary streaming service is required');
-    }
 
     if (formData.movieGenrePreferences.length === 0) {
       newErrors.push('At least one movie genre preference is required');
