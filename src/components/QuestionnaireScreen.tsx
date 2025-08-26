@@ -235,6 +235,72 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ onComp
                 ))}
               </div>
             </div>
+
+            {/* Openness to Experience */}
+            <div className="mb-6">
+              <label className="block text-amber-400 font-medium mb-3">
+                I enjoy trying new and different things. *
+              </label>
+              <div className="space-y-2">
+                {opennessOptions.map(option => (
+                  <label key={option} className="flex items-center">
+                    <input
+                      type="radio"
+                      name="opennessToExperience"
+                      value={option}
+                      checked={formData.opennessToExperience === option}
+                      onChange={(e) => setFormData(prev => ({ ...prev, opennessToExperience: e.target.value }))}
+                      className="mr-3 text-amber-500 focus:ring-amber-500"
+                    />
+                    <span className="text-gray-300">{option}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Risk Aversion */}
+            <div className="mb-6">
+              <label className="block text-amber-400 font-medium mb-3">
+                I prefer predictable and familiar experiences over unexpected ones. *
+              </label>
+              <div className="space-y-2">
+                {riskAversionOptions.map(option => (
+                  <label key={option} className="flex items-center">
+                    <input
+                      type="radio"
+                      name="riskAversion"
+                      value={option}
+                      checked={formData.riskAversion === option}
+                      onChange={(e) => setFormData(prev => ({ ...prev, riskAversion: e.target.value }))}
+                      className="mr-3 text-amber-500 focus:ring-amber-500"
+                    />
+                    <span className="text-gray-300">{option}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Movie Expertise */}
+            <div className="mb-6">
+              <label className="block text-amber-400 font-medium mb-3">
+                How knowledgeable are you about movies in general? *
+              </label>
+              <div className="space-y-2">
+                {expertiseOptions.map(option => (
+                  <label key={option} className="flex items-center">
+                    <input
+                      type="radio"
+                      name="movieExpertise"
+                      value={option}
+                      checked={formData.movieExpertise === option}
+                      onChange={(e) => setFormData(prev => ({ ...prev, movieExpertise: e.target.value }))}
+                      className="mr-3 text-amber-500 focus:ring-amber-500"
+                    />
+                    <span className="text-gray-300">{option}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Optional Questions */}
