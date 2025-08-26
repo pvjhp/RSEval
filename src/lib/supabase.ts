@@ -32,6 +32,12 @@ export type Database = {
           end_time: string | null;
           created_at: string;
           minimum_ratings_required: number;
+          movie_genre_preferences: string[];
+          openness_to_experience: string;
+          risk_aversion: string;
+          movie_expertise: string;
+          gender?: string;
+          ageRange?: string;
         };
         Insert: {
           id?: string;
@@ -41,6 +47,12 @@ export type Database = {
           end_time?: string | null;
           created_at?: string;
           minimum_ratings_required?: number;
+          movie_genre_preferences: string[];
+          openness_to_experience?: string;
+          risk_aversion?: string;
+          movie_expertise?: string;
+          gender?: string;
+          ageRange?: string;
         };
         Update: {
           id?: string;
@@ -50,6 +62,12 @@ export type Database = {
           end_time?: string | null;
           created_at?: string;
           minimum_ratings_required?: number;
+          movie_genre_preferences?: string[];
+          openness_to_experience?: string;
+          risk_aversion?: string;
+          movie_expertise?: string;
+          gender?: string;
+          ageRange?: string;
         };
       };
       movie_ratings: {
