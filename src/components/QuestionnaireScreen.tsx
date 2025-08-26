@@ -12,6 +12,9 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ onComp
     streamingServices: [],
     primaryStreamingService: '',
     movieGenrePreferences: [],
+    opennessToExperience: '',
+    riskAversion: '',
+    movieExpertise: '',
     attentionCheck: '',
     gender: '',
     ageRange: '',
@@ -51,6 +54,35 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ onComp
     '65 or older'
   ];
 
+  const opennessOptions = [
+    'Strongly disagree',
+    'Disagree',
+    'Somewhat disagree',
+    'Neither agree nor disagree',
+    'Somewhat agree',
+    'Agree',
+    'Strongly agree'
+  ];
+
+  const riskAversionOptions = [
+    'Strongly disagree',
+    'Disagree',
+    'Somewhat disagree',
+    'Neither agree nor disagree',
+    'Somewhat agree',
+    'Agree',
+    'Strongly agree'
+  ];
+
+  const expertiseOptions = [
+    'Not at all knowledgeable',
+    'Slightly knowledgeable',
+    'Somewhat knowledgeable',
+    'Moderately knowledgeable',
+    'Very knowledgeable',
+    'Extremely knowledgeable'
+  ];
+
   const handleStreamingServiceChange = (service: string, checked: boolean) => {
     if (checked) {
       setFormData(prev => ({
@@ -83,6 +115,18 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ onComp
 
     if (formData.movieGenrePreferences.length === 0) {
       newErrors.push('At least one movie genre preference is required');
+    }
+
+    if (!formData.opennessToExperience) {
+      newErrors.push('Openness to experience question is required');
+    }
+
+    if (!formData.riskAversion) {
+      newErrors.push('Risk aversion question is required');
+    }
+
+    if (!formData.movieExpertise) {
+      newErrors.push('Movie expertise question is required');
     }
 
     if (!formData.attentionCheck) {

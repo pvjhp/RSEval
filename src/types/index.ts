@@ -23,6 +23,9 @@ export interface QuestionnaireData {
   streamingServices: string[];
   primaryStreamingService: string;
   movieGenrePreferences: string[];
+  opennessToExperience: string;
+  riskAversion: string;
+  movieExpertise: string;
   gender?: string;
   ageRange?: string;
   attentionCheck: string;

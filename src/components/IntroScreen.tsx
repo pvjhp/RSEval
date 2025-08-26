@@ -19,6 +19,15 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onStart }) => {
           <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
             Please follow the steps below to help us understand your movie preferences. 
           </p>
+          
+          <div className="bg-amber-500 bg-opacity-10 border border-amber-500 rounded-xl p-6 mb-8 max-w-3xl mx-auto">
+            <h3 className="text-amber-400 font-semibold text-lg mb-3">Important Notice</h3>
+            <p className="text-gray-300 text-sm leading-relaxed">
+              Providing more frequent and accurate ratings will lead to more precise recommendations. 
+              We will hold a lottery where the winner receives a VOD rental of their highest-rated 
+              recommended movie as a reward.
+            </p>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 mb-12">
