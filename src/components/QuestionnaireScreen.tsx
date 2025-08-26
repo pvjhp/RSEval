@@ -55,32 +55,27 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ onComp
   ];
 
   const opennessOptions = [
-    'Strongly disagree',
-    'Disagree',
-    'Somewhat disagree',
-    'Neither agree nor disagree',
-    'Somewhat agree',
-    'Agree',
-    'Strongly agree'
+    '1 - Strongly disagree',
+    '2 - Disagree',
+    '3 - Neither agree nor disagree',
+    '4 - Agree',
+    '5 - Strongly agree'
   ];
 
   const riskAversionOptions = [
-    'Strongly disagree',
-    'Disagree',
-    'Somewhat disagree',
-    'Neither agree nor disagree',
-    'Somewhat agree',
-    'Agree',
-    'Strongly agree'
+    '1 - Strongly disagree',
+    '2 - Disagree',
+    '3 - Neither agree nor disagree',
+    '4 - Agree',
+    '5 - Strongly agree'
   ];
 
   const expertiseOptions = [
-    'Not at all knowledgeable',
-    'Slightly knowledgeable',
-    'Somewhat knowledgeable',
-    'Moderately knowledgeable',
-    'Very knowledgeable',
-    'Extremely knowledgeable'
+    '1 - Not at all knowledgeable',
+    '2 - Slightly knowledgeable',
+    '3 - Moderately knowledgeable',
+    '4 - Very knowledgeable',
+    '5 - Extremely knowledgeable'
   ];
 
   const handleStreamingServiceChange = (service: string, checked: boolean) => {
@@ -196,22 +191,90 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ onComp
             </div>
 
 
+            {/* Openness to Experience */}
+            <div className="mb-6">
+              <label className="block text-amber-400 font-medium mb-3">
+                I enjoy trying new and different things. *
+              </label>
+              <div className="space-y-2">
+                {opennessOptions.map(option => (
+                  <label key={option} className="flex items-center">
+                    <input
+                      type="radio"
+                      name="opennessToExperience"
+                      value={option}
+                      checked={formData.opennessToExperience === option}
+                      onChange={(e) => setFormData(prev => ({ ...prev, opennessToExperience: e.target.value }))}
+                      className="mr-3 text-amber-500 focus:ring-amber-500"
+                    />
+                    <span className="text-gray-300">{option}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
             {/* Attention Check */}
             <div className="mb-6">
               <label className="block text-amber-400 font-medium mb-3">
-                To help us with the survey, please select "Option C" for this question. *
+                To help us with the survey, please select "3 - Neither agree nor disagree" for this question. *
               </label>
-              <select
-                value={formData.attentionCheck}
-                onChange={(e) => setFormData(prev => ({ ...prev, attentionCheck: e.target.value }))}
-                className="w-full bg-gray-800 border border-gray-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500"
-              >
-                <option value="">Select an option</option>
-                <option value="Option A">Option A</option>
-                <option value="Option B">Option B</option>
-                <option value="Option C">Option C</option>
-                <option value="Option D">Option D</option>
-              </select>
+              <div className="space-y-2">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="attentionCheck"
+                    value="1 - Strongly disagree"
+                    checked={formData.attentionCheck === "1 - Strongly disagree"}
+                    onChange={(e) => setFormData(prev => ({ ...prev, attentionCheck: e.target.value }))}
+                    className="mr-3 text-amber-500 focus:ring-amber-500"
+                  />
+                  <span className="text-gray-300">1 - Strongly disagree</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="attentionCheck"
+                    value="2 - Disagree"
+                    checked={formData.attentionCheck === "2 - Disagree"}
+                    onChange={(e) => setFormData(prev => ({ ...prev, attentionCheck: e.target.value }))}
+                    className="mr-3 text-amber-500 focus:ring-amber-500"
+                  />
+                  <span className="text-gray-300">2 - Disagree</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="attentionCheck"
+                    value="3 - Neither agree nor disagree"
+                    checked={formData.attentionCheck === "3 - Neither agree nor disagree"}
+                    onChange={(e) => setFormData(prev => ({ ...prev, attentionCheck: e.target.value }))}
+                    className="mr-3 text-amber-500 focus:ring-amber-500"
+                  />
+                  <span className="text-gray-300">3 - Neither agree nor disagree</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="attentionCheck"
+                    value="4 - Agree"
+                    checked={formData.attentionCheck === "4 - Agree"}
+                    onChange={(e) => setFormData(prev => ({ ...prev, attentionCheck: e.target.value }))}
+                    className="mr-3 text-amber-500 focus:ring-amber-500"
+                  />
+                  <span className="text-gray-300">4 - Agree</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="attentionCheck"
+                    value="5 - Strongly agree"
+                    checked={formData.attentionCheck === "5 - Strongly agree"}
+                    onChange={(e) => setFormData(prev => ({ ...prev, attentionCheck: e.target.value }))}
+                    className="mr-3 text-amber-500 focus:ring-amber-500"
+                  />
+                  <span className="text-gray-300">5 - Strongly agree</span>
+                </label>
+              </div>
             </div>
 
             {/* Movie Genre Preferences */}
@@ -231,28 +294,6 @@ export const QuestionnaireScreen: React.FC<QuestionnaireScreenProps> = ({ onComp
                       className="mr-3 text-amber-500 focus:ring-amber-500"
                     />
                     <span className="text-gray-300">{genre}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Openness to Experience */}
-            <div className="mb-6">
-              <label className="block text-amber-400 font-medium mb-3">
-                I enjoy trying new and different things. *
-              </label>
-              <div className="space-y-2">
-                {opennessOptions.map(option => (
-                  <label key={option} className="flex items-center">
-                    <input
-                      type="radio"
-                      name="opennessToExperience"
-                      value={option}
-                      checked={formData.opennessToExperience === option}
-                      onChange={(e) => setFormData(prev => ({ ...prev, opennessToExperience: e.target.value }))}
-                      className="mr-3 text-amber-500 focus:ring-amber-500"
-                    />
-                    <span className="text-gray-300">{option}</span>
                   </label>
                 ))}
               </div>
