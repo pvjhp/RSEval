@@ -688,6 +688,7 @@ function App() {
             openness_to_experience: questionnaireData.opennessToExperience,
             risk_aversion: questionnaireData.riskAversion,
             movie_expertise: questionnaireData.movieExpertise,
+            attention_check: questionnaireData.attentionCheck,
             gender: questionnaireData.gender,
             age_range: questionnaireData.ageRange,
             nationality: questionnaireData.nationality,

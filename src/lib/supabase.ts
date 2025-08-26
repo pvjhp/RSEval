@@ -36,6 +36,7 @@ export type Database = {
           openness_to_experience: string;
           risk_aversion: string;
           movie_expertise: string;
+          attention_check: string;
           gender?: string;
           ageRange?: string;
         };
@@ -51,6 +52,7 @@ export type Database = {
           openness_to_experience?: string;
           risk_aversion?: string;
           movie_expertise?: string;
+          attention_check?: string;
           gender?: string;
           ageRange?: string;
         };
@@ -66,6 +68,7 @@ export type Database = {
           openness_to_experience?: string;
           risk_aversion?: string;
           movie_expertise?: string;
+          attention_check?: string;
           gender?: string;
           ageRange?: string;
         };
